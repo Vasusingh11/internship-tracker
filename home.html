@@ -15,7 +15,7 @@
         <a href="dashboard.html">Dashboard</a>
         <a href="profile.html">Profile</a>
         <a href="#" id="logout-btn">Logout</a>
-        <a href id="dark-mode-toggle">Dark Mode</a>
+        <a id="dark-mode-toggle">Dark Mode</a>
       </nav>
     </div>
   </header>
@@ -91,6 +91,40 @@
       e.preventDefault();
       localStorage.removeItem('token');
       window.location.href = 'index.html';
+    });
+    
+    // Debug function to check jobs data
+    window.checkJobsData = function() {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        console.log('No token found');
+        return;
+      }
+      
+      fetch('http://localhost:5000/api/jobs', {
+        headers: {
+          'Authorization': 'Bearer ' + token,
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log('Jobs data:', data);
+        if (data.success) {
+          console.log('Number of jobs:', data.jobs.length);
+          console.log('Jobs details:', data.jobs);
+        } else {
+          console.error('Error:', data.message);
+        }
+      })
+      .catch(error => {
+        console.error('Fetch error:', error);
+      });
+    };
+    
+    // Call checkJobsData on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      setTimeout(checkJobsData, 1000);
     });
   </script>
   <script src="script.js"></script>

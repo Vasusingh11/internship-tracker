@@ -108,6 +108,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Function to load jobs from the API
     // Make sure the loadJobs function properly fetches and displays all jobs:
+// Function to load jobs from the API
 async function loadJobs() {
     try {
         const status = filterSelect ? filterSelect.value : 'all';
@@ -117,7 +118,7 @@ async function loadJobs() {
         if (status !== 'all') queryParams.append('status', status);
         if (search) queryParams.append('search', search);
         
-        console.log("Fetching jobs with params:", queryParams.toString());
+        console.log("Fetching jobs with query params:", queryParams.toString());
         
         const response = await fetch(`${API_URL}/jobs?${queryParams.toString()}`, {
             headers: {
@@ -126,65 +127,78 @@ async function loadJobs() {
             }
         });
         
+        console.log("Response status:", response.status);
         const data = await response.json();
+        console.log("Response data:", data);
         
         if (data.success) {
             console.log("Jobs received:", data.jobs.length);
             renderJobs(data.jobs);
         } else {
             console.error("Failed to load jobs:", data.message);
+            // Display error message on the page
+            if (jobListBody) {
+                jobListBody.innerHTML = `<tr><td colspan="6" class="text-center">Error loading jobs: ${data.message}</td></tr>`;
+            }
         }
     } catch (error) {
         console.error("Error loading jobs:", error);
+        // Display error message on the page
+        if (jobListBody) {
+            jobListBody.innerHTML = `<tr><td colspan="6" class="text-center">Error loading jobs. Please check console for details.</td></tr>`;
+        }
     }
 }
 
     // Function to render jobs to the table
-    function renderJobs(jobs) {
-        if (!jobListBody) return;
-        
-        jobListBody.innerHTML = "";
-        
-        if (jobs.length === 0) {
-            const row = document.createElement("tr");
-            row.innerHTML = `<td colspan="6" class="text-center">No jobs found. Add your first job application above!</td>`;
-            jobListBody.appendChild(row);
-            return;
-        }
-
-        jobs.forEach((job) => {
-            const row = document.createElement("tr");
-            
-            row.innerHTML = `
-                <td>
-                    <a href="job-detail.html?id=${job.job_id}" class="job-title-link">${job.title}</a>
-                </td>
-                <td>
-                    ${job.company}
-                </td>
-                <td>${formatDate(job.application_date) || ''}</td>
-                <td>
-                    ${job.notes ? job.notes.substring(0, 50) + (job.notes.length > 50 ? '...' : '') : ''}
-                </td>
-                <td class="${isPastDeadline(job.deadline_date) ? 'deadline-warning' : ''}">
-                    ${job.deadline_date ? formatDate(job.deadline_date) : ''}
-                </td>
-                <td>
-                    <select onchange="updateJobStatus(${job.job_id}, this.value)">
-                        <option value="bookmark" ${job.status === "bookmark" ? "selected" : ""}>Bookmark</option>
-                        <option value="applied" ${job.status === "applied" ? "selected" : ""}>Applied</option>
-                        <option value="interview" ${job.status === "interview" ? "selected" : ""}>Interview</option>
-                        <option value="accepted" ${job.status === "accepted" ? "selected" : ""}>Accepted</option>
-                        <option value="rejected" ${job.status === "rejected" ? "selected" : ""}>Rejected</option>
-                    </select>
-                    <a href="job-detail.html?id=${job.job_id}" class="view-details-btn" title="View Details">👁️</a>
-                    <button onclick="deleteJob(${job.job_id})" title="Delete">🗑️</button>
-                </td>
-            `;
-
-            jobListBody.appendChild(row);
-        });
+    // Function to render jobs to the table
+function renderJobs(jobs) {
+    if (!jobListBody) return;
+    
+    jobListBody.innerHTML = "";
+    
+    if (jobs.length === 0) {
+        const row = document.createElement("tr");
+        row.innerHTML = `<td colspan="6" class="text-center">No jobs found. Add your first job application above!</td>`;
+        jobListBody.appendChild(row);
+        return;
     }
+    
+    console.log("Rendering jobs:", jobs);
+
+    jobs.forEach((job) => {
+        const row = document.createElement("tr");
+        
+        row.innerHTML = `
+            <td>
+                <a href="job-detail.html?id=${job.job_id}" class="job-title-link">${job.title}</a>
+            </td>
+            <td>
+                ${job.company}
+            </td>
+            <td>${formatDate(job.application_date) || ''}</td>
+            <td>
+                ${job.notes ? job.notes.substring(0, 50) + (job.notes.length > 50 ? '...' : '') : ''}
+            </td>
+            <td class="${isPastDeadline(job.deadline_date) ? 'deadline-warning' : ''}">
+                ${job.deadline_date ? formatDate(job.deadline_date) : ''}
+            </td>
+            <td>
+                <select onchange="updateJobStatus(${job.job_id}, this.value)">
+                    <option value="bookmark" ${job.status === "bookmark" ? "selected" : ""}>Bookmark</option>
+                    <option value="applied" ${job.status === "applied" ? "selected" : ""}>Applied</option>
+                    <option value="interview" ${job.status === "interview" ? "selected" : ""}>Interview</option>
+                    <option value="accepted" ${job.status === "accepted" ? "selected" : ""}>Accepted</option>
+                    <option value="rejected" ${job.status === "rejected" ? "selected" : ""}>Rejected</option>
+                </select>
+                <a href="job-detail.html?id=${job.job_id}" class="view-details-btn" title="View Details">👁️</a>
+                <button onclick="deleteJob(${job.job_id})" title="Delete">🗑️</button>
+            </td>
+        `;
+
+        jobListBody.appendChild(row);
+    });
+}
 
     // Function to add a new job
     async function addJob(jobData) {
@@ -336,3 +350,16 @@ async function loadJobs() {
         }
     };
 });
+function isPastDeadline(deadline) {
+    if (!deadline) return false;
+    const today = new Date();
+    const deadlineDate = new Date(deadline);
+    return deadlineDate < today;
+}
+
+// Function to format date
+function formatDate(dateString) {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+}
