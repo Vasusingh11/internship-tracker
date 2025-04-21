@@ -107,33 +107,37 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Function to load jobs from the API
-    async function loadJobs() {
-        try {
-            const status = filterSelect ? filterSelect.value : 'all';
-            const search = searchBar ? searchBar.value : '';
-            
-            const queryParams = new URLSearchParams();
-            if (status !== 'all') queryParams.append('status', status);
-            if (search) queryParams.append('search', search);
-            
-            const response = await fetch(`${API_URL}/jobs?${queryParams.toString()}`, {
-                headers: {
-                    ...authHeader,
-                    'Content-Type': 'application/json'
-                }
-            });
-            
-            const data = await response.json();
-            
-            if (data.success) {
-                renderJobs(data.jobs);
-            } else {
-                console.error("Failed to load jobs:", data.message);
+    // Make sure the loadJobs function properly fetches and displays all jobs:
+async function loadJobs() {
+    try {
+        const status = filterSelect ? filterSelect.value : 'all';
+        const search = searchBar ? searchBar.value : '';
+        
+        const queryParams = new URLSearchParams();
+        if (status !== 'all') queryParams.append('status', status);
+        if (search) queryParams.append('search', search);
+        
+        console.log("Fetching jobs with params:", queryParams.toString());
+        
+        const response = await fetch(`${API_URL}/jobs?${queryParams.toString()}`, {
+            headers: {
+                ...authHeader,
+                'Content-Type': 'application/json'
             }
-        } catch (error) {
-            console.error("Error loading jobs:", error);
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            console.log("Jobs received:", data.jobs.length);
+            renderJobs(data.jobs);
+        } else {
+            console.error("Failed to load jobs:", data.message);
         }
+    } catch (error) {
+        console.error("Error loading jobs:", error);
     }
+}
 
     // Function to render jobs to the table
     function renderJobs(jobs) {
@@ -167,8 +171,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 </td>
                 <td>
                     <select onchange="updateJobStatus(${job.job_id}, this.value)">
+                        <option value="bookmark" ${job.status === "bookmark" ? "selected" : ""}>Bookmark</option>
                         <option value="applied" ${job.status === "applied" ? "selected" : ""}>Applied</option>
                         <option value="interview" ${job.status === "interview" ? "selected" : ""}>Interview</option>
+                        <option value="accepted" ${job.status === "accepted" ? "selected" : ""}>Accepted</option>
                         <option value="rejected" ${job.status === "rejected" ? "selected" : ""}>Rejected</option>
                     </select>
                     <a href="job-detail.html?id=${job.job_id}" class="view-details-btn" title="View Details">👁️</a>

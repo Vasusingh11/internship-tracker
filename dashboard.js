@@ -39,36 +39,39 @@ document.addEventListener("DOMContentLoaded", () => {
     loadRecentJobs();
     
     // Dashboard data loading function
-    async function loadDashboardData() {
-        try {
-            const response = await fetch(`${API_URL}/dashboard`, {
-                headers: {
-                    ...authHeader,
-                    'Content-Type': 'application/json'
-                }
-            });
-            
-            const data = await response.json();
-            
-            if (data.success) {
-                // Update statistics
-                document.getElementById('total-jobs').textContent = data.stats.total_jobs;
-                document.getElementById('applied-count').textContent = data.stats.applied;
-                document.getElementById('interview-count').textContent = data.stats.interview;
-                document.getElementById('rejected-count').textContent = data.stats.rejected;
-                
-                // Update deadlines
-                updateDeadlinesList(data.stats.upcoming_deadlines);
-                
-                // Create charts
-                createStatusChart(data.stats);
-            } else {
-                console.error("Failed to load dashboard data:", data.message);
+// In the loadDashboardData function, add these lines:
+async function loadDashboardData() {
+    try {
+        const response = await fetch(`${API_URL}/dashboard`, {
+            headers: {
+                ...authHeader,
+                'Content-Type': 'application/json'
             }
-        } catch (error) {
-            console.error("Error loading dashboard data:", error);
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Update statistics
+            document.getElementById('total-jobs').textContent = data.stats.total_jobs;
+            document.getElementById('bookmark-count').textContent = data.stats.bookmark || 0; // Add this line
+            document.getElementById('applied-count').textContent = data.stats.applied;
+            document.getElementById('interview-count').textContent = data.stats.interview;
+            document.getElementById('accepted-count').textContent = data.stats.accepted || 0; // Add this line
+            document.getElementById('rejected-count').textContent = data.stats.rejected;
+            
+            // Update deadlines
+            updateDeadlinesList(data.stats.upcoming_deadlines);
+            
+            // Create charts
+            createStatusChart(data.stats);
+        } else {
+            console.error("Failed to load dashboard data:", data.message);
         }
+    } catch (error) {
+        console.error("Error loading dashboard data:", error);
     }
+}
     
     // Function to update deadlines list
     function updateDeadlinesList(deadlines) {
@@ -161,131 +164,155 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     
     // Function to create status chart
-    function createStatusChart(stats) {
-        const ctx = document.getElementById('status-chart').getContext('2d');
-        
-        new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Applied', 'Interview', 'Rejected'],
-                datasets: [{
-                    data: [stats.applied, stats.interview, stats.rejected],
-                    backgroundColor: [
-                        '#4a90e2',  // Blue for applied
-                        '#50c878',  // Green for interview
-                        '#e74c3c'   // Red for rejected
-                    ],
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'right',
-                    },
-                    title: {
-                        display: true,
-                        text: 'Application Status Distribution',
-                        font: {
-                            size: 16
-                        }
+    // Update your createStatusChart function:
+function createStatusChart(stats) {
+    const ctx = document.getElementById('status-chart').getContext('2d');
+    
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Bookmark', 'Applied', 'Interview', 'Accepted', 'Rejected'],
+            datasets: [{
+                data: [
+                    stats.bookmark || 0, 
+                    stats.applied || 0, 
+                    stats.interview || 0, 
+                    stats.accepted || 0, 
+                    stats.rejected || 0
+                ],
+                backgroundColor: [
+                    '#9966cc',  // Purple for bookmark
+                    '#4a90e2',  // Blue for applied
+                    '#50c878',  // Green for interview
+                    '#ffa500',  // Orange for accepted
+                    '#e74c3c'   // Red for rejected
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'right',
+                },
+                title: {
+                    display: true,
+                    text: 'Application Status Distribution',
+                    font: {
+                        size: 16
                     }
                 }
             }
-        });
-    }
+        }
+    });
+}
     
     // Function to create timeline chart
-    function createTimelineChart(jobs) {
-        // Group jobs by month
-        const jobsByMonth = {};
-        const sixMonthsAgo = new Date();
-        sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5);
-        
-        // Initialize all months with zero counts
-        for (let i = 0; i < 6; i++) {
-            const date = new Date();
-            date.setMonth(date.getMonth() - i);
-            const monthYear = `${date.toLocaleString('default', { month: 'short' })} ${date.getFullYear()}`;
-            jobsByMonth[monthYear] = { applied: 0, interview: 0, rejected: 0 };
-        }
-        
-        // Count jobs by month and status
-        jobs.forEach(job => {
-            const jobDate = new Date(job.application_date);
-            
-            // Only include jobs from the last 6 months
-            if (jobDate >= sixMonthsAgo) {
-                const monthYear = `${jobDate.toLocaleString('default', { month: 'short' })} ${jobDate.getFullYear()}`;
-                
-                if (jobsByMonth[monthYear]) {
-                    jobsByMonth[monthYear][job.status]++;
-                }
-            }
-        });
-        
-        // Prepare data for chart
-        const labels = Object.keys(jobsByMonth).reverse();
-        const appliedData = labels.map(month => jobsByMonth[month].applied);
-        const interviewData = labels.map(month => jobsByMonth[month].interview);
-        const rejectedData = labels.map(month => jobsByMonth[month].rejected);
-        
-        const ctx = document.getElementById('timeline-chart').getContext('2d');
-        
-        new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [
-                    {
-                        label: 'Applied',
-                        data: appliedData,
-                        backgroundColor: '#4a90e2',
-                        borderWidth: 1
-                    },
-                    {
-                        label: 'Interview',
-                        data: interviewData,
-                        backgroundColor: '#50c878',
-                        borderWidth: 1
-                    },
-                    {
-                        label: 'Rejected',
-                        data: rejectedData,
-                        backgroundColor: '#e74c3c',
-                        borderWidth: 1
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    x: {
-                        stacked: true,
-                    },
-                    y: {
-                        stacked: true,
-                        beginAtZero: true,
-                        ticks: {
-                            precision: 0
-                        }
-                    }
-                },
-                plugins: {
-                    title: {
-                        display: true,
-                        text: 'Job Applications Timeline',
-                        font: {
-                            size: 16
-                        }
-                    }
-                }
-            }
-        });
+    // In the createTimelineChart function, update the jobsByMonth initialization:
+function createTimelineChart(jobs) {
+    // Group jobs by month
+    const jobsByMonth = {};
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5);
+    
+    // Initialize all months with zero counts (update this part)
+    for (let i = 0; i < 6; i++) {
+        const date = new Date();
+        date.setMonth(date.getMonth() - i);
+        const monthYear = `${date.toLocaleString('default', { month: 'short' })} ${date.getFullYear()}`;
+        jobsByMonth[monthYear] = { bookmark: 0, applied: 0, interview: 0, accepted: 0, rejected: 0 };
     }
+    
+    // Count jobs by month and status (leave this as is, it will pick up the new statuses)
+    jobs.forEach(job => {
+        const jobDate = new Date(job.application_date);
+        
+        // Only include jobs from the last 6 months
+        if (jobDate >= sixMonthsAgo) {
+            const monthYear = `${jobDate.toLocaleString('default', { month: 'short' })} ${jobDate.getFullYear()}`;
+            
+            if (jobsByMonth[monthYear] && jobsByMonth[monthYear][job.status] !== undefined) {
+                jobsByMonth[monthYear][job.status]++;
+            }
+        }
+    });
+    
+    // Prepare data for chart (update this part)
+    const labels = Object.keys(jobsByMonth).reverse();
+    const bookmarkData = labels.map(month => jobsByMonth[month].bookmark);
+    const appliedData = labels.map(month => jobsByMonth[month].applied);
+    const interviewData = labels.map(month => jobsByMonth[month].interview);
+    const acceptedData = labels.map(month => jobsByMonth[month].accepted);
+    const rejectedData = labels.map(month => jobsByMonth[month].rejected);
+    
+    const ctx = document.getElementById('timeline-chart').getContext('2d');
+    
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Bookmark',
+                    data: bookmarkData,
+                    backgroundColor: '#9966cc', // Purple
+                    borderWidth: 1
+                },
+                {
+                    label: 'Applied',
+                    data: appliedData,
+                    backgroundColor: '#4a90e2', // Blue
+                    borderWidth: 1
+                },
+                {
+                    label: 'Interview',
+                    data: interviewData,
+                    backgroundColor: '#50c878', // Green
+                    borderWidth: 1
+                },
+                {
+                    label: 'Accepted',
+                    data: acceptedData,
+                    backgroundColor: '#ffa500', // Orange
+                    borderWidth: 1
+                },
+                {
+                    label: 'Rejected',
+                    data: rejectedData,
+                    backgroundColor: '#e74c3c', // Red
+                    borderWidth: 1
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    stacked: true,
+                },
+                y: {
+                    stacked: true,
+                    beginAtZero: true,
+                    ticks: {
+                        precision: 0
+                    }
+                }
+            },
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Job Applications Timeline',
+                    font: {
+                        size: 16
+                    }
+                }
+            }
+        }
+    });
+}
     
     // Helper function to format date
     function formatDate(dateString) {

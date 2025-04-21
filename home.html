@@ -15,7 +15,7 @@
         <a href="dashboard.html">Dashboard</a>
         <a href="profile.html">Profile</a>
         <a href="#" id="logout-btn">Logout</a>
-        <button id="dark-mode-toggle">Dark Mode</button>
+        <a href id="dark-mode-toggle">Dark Mode</a>
       </nav>
     </div>
   </header>
@@ -41,8 +41,10 @@
         </div>                    
 
         <select id="job-status">
+          <option value="bookmark">Bookmark</option>
           <option value="applied">Applied</option>
           <option value="interview">Interview</option>
+          <option value="accepted">Accepted</option>
           <option value="rejected">Rejected</option>
         </select>
         <button type="submit">Add Job</button>
@@ -54,8 +56,10 @@
       <label for="filter-status">Filter by Status:</label>
       <select id="filter-status">
         <option value="all">All</option>
+        <option value="bookmark">Bookmark</option>
         <option value="applied">Applied</option>
         <option value="interview">Interview</option>
+        <option value="accepted">Accepted</option>
         <option value="rejected">Rejected</option>
       </select>
 

@@ -52,7 +52,7 @@ class Job(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.user_id', ondelete='CASCADE'), nullable=False)
     title = db.Column(db.String(100), nullable=False)
     company = db.Column(db.String(100), nullable=False)
-    status = db.Column(db.Enum('applied', 'interview', 'rejected', 'offered'), default='applied', nullable=False)
+    status = db.Column(db.Enum('bookmark', 'applied', 'interview', 'accepted', 'rejected'), default='applied', nullable=False)
     application_date = db.Column(db.Date, default=lambda: datetime.now(timezone.utc).date())
     deadline_date = db.Column(db.Date)
     notes = db.Column(db.Text)
@@ -194,6 +194,8 @@ def get_jobs():
         else:
             jobs = query.all()
         
+        print(f"Fetched {len(jobs)} jobs for user {current_user_id}")
+        
         jobs_data = [{
             'job_id': job.job_id,
             'title': job.title,
@@ -264,7 +266,7 @@ def create_job():
             return jsonify(success=False, message="Job title and company are required"), 400
         
         # Validate status
-        valid_statuses = ['applied', 'interview', 'rejected', 'offered']
+        valid_statuses = ['bookmark', 'applied', 'interview', 'accepted', 'rejected']
         if status not in valid_statuses:
             return jsonify(success=False, message=f"Invalid status: '{status}'. Must be one of: {', '.join(valid_statuses)}"), 400
         
@@ -332,7 +334,7 @@ def update_job(job_id):
         
         # Validate status if provided
         if 'status' in data:
-            valid_statuses = ['applied', 'interview', 'rejected', 'offered']
+            valid_statuses = ['bookmark', 'applied', 'interview', 'accepted', 'rejected']
             if data['status'] not in valid_statuses:
                 return jsonify(success=False, message=f"Invalid status: '{data['status']}'. Must be one of: {', '.join(valid_statuses)}"), 400
         
@@ -504,11 +506,12 @@ def get_dashboard_stats():
         current_user_id = int(get_jwt_identity())
         
         # Get counts by status
+        bookmark_count = Job.query.filter_by(user_id=current_user_id, status='bookmark').count()
         applied_count = Job.query.filter_by(user_id=current_user_id, status='applied').count()
         interview_count = Job.query.filter_by(user_id=current_user_id, status='interview').count()
+        accepted_count = Job.query.filter_by(user_id=current_user_id, status='accepted').count()
         rejected_count = Job.query.filter_by(user_id=current_user_id, status='rejected').count()
-        offered_count = Job.query.filter_by(user_id=current_user_id, status='offered').count()
-        total_count = applied_count + interview_count + rejected_count + offered_count
+        total_count = bookmark_count + applied_count + interview_count + accepted_count + rejected_count
         
         # Get upcoming deadlines
         today = datetime.now(timezone.utc).date()
@@ -551,7 +554,7 @@ def get_dashboard_stats():
                 status = row[1]
                 count = row[2]
                 if month not in monthly_data:
-                    monthly_data[month] = {'applied': 0, 'interview': 0, 'rejected': 0, 'offered': 0}
+                    monthly_data[month] = {'bookmark': 0, 'applied': 0, 'interview': 0, 'accepted': 0, 'rejected': 0}
                 monthly_data[month][status] = count
         except Exception as e:
             # Fallback if the SQL query fails
@@ -577,10 +580,11 @@ def get_dashboard_stats():
             success=True,
             stats={
                 'total_jobs': total_count,
+                'bookmark': bookmark_count,
                 'applied': applied_count,
                 'interview': interview_count,
+                'accepted': accepted_count,
                 'rejected': rejected_count,
-                'offered': offered_count,
                 'upcoming_deadlines': deadline_data,
                 'monthly_stats': monthly_data,
                 'recent_activity': activity_data

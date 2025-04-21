@@ -684,7 +684,27 @@ body.dark-mode .btn-secondary {
 body.dark-mode .btn-secondary:hover {
   background-color: #445577;
 }
+/* Line 668: Add styles for the new status badges */
+.status-bookmark {
+  background-color: #f3e6ff;
+  color: #7a28cb;
+}
 
+.status-accepted {
+  background-color: #fff3e0;
+  color: #e65100;
+}
+
+/* Line 719: Add dark mode styles for the new statuses */
+body.dark-mode .status-bookmark {
+  background-color: #4b2d70;
+  color: #d4b3ff;
+}
+
+body.dark-mode .status-accepted {
+  background-color: #553810;
+  color: #ffcc80;
+}
 /* Login and signup form specific styles */
 .login-wrapper {
   max-width: 400px;

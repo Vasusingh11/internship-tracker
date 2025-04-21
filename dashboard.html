@@ -115,6 +115,40 @@
     body.dark-mode .deadline-item {
       border-bottom: 1px solid #334566;
     }
+
+    /* New styles for header navigation */
+    header .nav-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+    }
+
+    nav {
+      display: flex;
+      align-items: center;
+    }
+
+    nav a, nav button {
+      margin-left: 20px;
+      text-decoration: none;
+      color: #003366;
+      font-weight: bold;
+    }
+
+    #dark-mode-toggle {
+      background: none;
+      border: none;
+      color: #003366;
+      cursor: pointer;
+      font-weight: bold;
+      padding: 0;
+    }
+
+    body.dark-mode nav a, 
+    body.dark-mode #dark-mode-toggle {
+      color: #fff;
+    }
   </style>
 </head>
 <body>
@@ -123,8 +157,10 @@
       <h1>Job Tracker</h1>
       <nav>
         <a href="home.html">Job List</a>
+        <a href="dashboard.html" class="active">Dashboard</a>
+        <a href="profile.html">Profile</a>
         <a href="#" id="logout-btn">Logout</a>
-        <button id="dark-mode-toggle">Dark Mode</button>
+        <a href id="dark-mode-toggle">Dark Mode</a>
       </nav>
     </div>
   </header>
@@ -145,12 +181,20 @@
             <div class="stat-value" id="total-jobs">0</div>
           </div>
           <div class="stat-card">
+            <div class="stat-label">Bookmark</div>
+            <div class="stat-value" id="bookmark-count">0</div>
+          </div>
+          <div class="stat-card">
             <div class="stat-label">Applied</div>
             <div class="stat-value" id="applied-count">0</div>
           </div>
           <div class="stat-card">
             <div class="stat-label">Interviews</div>
             <div class="stat-value" id="interview-count">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Accepted</div>
+            <div class="stat-value" id="accepted-count">0</div>
           </div>
           <div class="stat-card">
             <div class="stat-label">Rejected</div>
