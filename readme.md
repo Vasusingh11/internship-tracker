@@ -37,7 +37,7 @@ DATABASE_URL=mysql+pymysql://username:password@localhost/job_tracker_db
 ```bash
 cd frontend
 npm install
-npm start       # Runs on http://localhost:3000
+npm start       # Runs on http://localhost:5000
 ```
 ## 🤝 Contributors
 - Vasu
