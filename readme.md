@@ -40,6 +40,6 @@ npm install
 npm start       # Runs on http://localhost:5000
 ```
 ## 🤝 Contributors
-- Vasu
-- Sanyati
+- Vasu - https://linkedin.com/Vasusingh11/
+- Sanyati - https://linkedin.com/Sanyatisharma
 - Sneha
