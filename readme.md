@@ -29,3 +29,17 @@ python -m venv venv
 venv\Scripts\activate      # On Windows
 pip install -r requirements.txt
 python -m backend.app      # Starts the backend server on http://127.0.0.1:5000
+```
+### Ensure you have a valid .env file with your MySQL connection string: 
+DATABASE_URL=mysql+pymysql://username:password@localhost/job_tracker_db
+
+### Frontend Setup
+```bash
+cd frontend
+npm install
+npm start       # Runs on http://localhost:3000
+```
+🤝 Contributors
+Vasu
+Sanyati
+Sneha
