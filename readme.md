@@ -8,7 +8,7 @@ A full-stack web application to help students and professionals manage their int
 - Add and view internships/jobs
 - Track application status: bookmarked, applied, interviewed, accepted, rejected
 - View job list with filters
-- Responsive UI built with React and TailwindCSS
+- Responsive UI built with HTML, CSS, JavaScript
 - RESTful API with Flask backend
 - MySQL database integration
 
