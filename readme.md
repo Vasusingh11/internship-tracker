@@ -14,8 +14,8 @@ A full-stack web application to help students and professionals manage their int
 
 ## 🛠️ Tech Stack
 
-- **Frontend:** HTML, TailwindCSS, JavaScript
-- **Backend:** Flask, Flask-JWT-Extended
+- **Frontend:** HTML, CSS, JavaScript
+- **Backend:** Python, Flask, Flask-JWT-Extended
 - **Database:** MySQL (hosted locally or via Railway.app)
 - **ORM:** SQLAlchemy
 
